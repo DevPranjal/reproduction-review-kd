@@ -1,0 +1,5 @@
+pretrained/
+pretrained-basickd/
+*.pt
+*.pyc
+__pycache__/
