@@ -5,32 +5,29 @@ from tqdm import tqdm
 
 
 def hcl(student_features, teacher_features):
-    total_loss = 0.0
+    loss = 0.0
     n, c, h, w = student_features.shape
 
     levels = [h, 4, 2, 1]
     lvl_weight = 1.0
     total_weight = 0.0
 
-    for i in range(n):
-        example_loss = 0.0
+    for i, lvl in enumerate(levels):
+        if lvl > h:
+            continue
 
-        for lvl in levels:
-            if lvl > h:
-                continue
+        lvl_sf = F.adaptive_avg_pool2d(student_features, (lvl, lvl))
+        lvl_tf = F.adaptive_avg_pool2d(teacher_features, (lvl, lvl))
 
-            lvl_sf = F.adaptive_avg_pool2d(student_features, (lvl, lvl))
-            lvl_tf = F.adaptive_avg_pool2d(teacher_features, (lvl, lvl))
+        # print(f'LOSS LEVEL {i} SHAPE: {lvl_sf.shape}')
 
-            lvl_loss = F.mse_loss(lvl_sf, lvl_tf) * lvl_weight
-            example_loss += lvl_loss
+        lvl_loss = F.mse_loss(lvl_sf, lvl_tf) * lvl_weight
+        loss += lvl_loss
 
-            total_weight += lvl_weight
-            lvl_weight = lvl_weight / 2.0
+        total_weight += lvl_weight
+        lvl_weight = lvl_weight / 2.0
 
-        total_loss += example_loss / total_weight
-
-    return total_loss
+    return loss / total_weight
 
 
 def calculate_accuracy(net, test_iter, device):

@@ -14,8 +14,8 @@ def generate_name(params, net_type):
 
 def store_model(net, params, net_type):
     name = generate_name(params, net_type)
-    location = f"pretrained/{net_type}/{name}"
-    print("saving model to {location}")
+    location = f"/home/pranjal/Projects/ml-repro-2021/review-kd/pretrained/{net_type}/{name}"
+    print(f"saving model to {location}")
     torch.save(net, f"{location}")
 
 
@@ -29,7 +29,7 @@ def generate_names(params):
 def is_pretrained_present(params, net_type):
     name = generate_name(params, net_type)
     import os
-    os.chdir(f"pretrained/{net_type}")
+    os.chdir(f"/home/pranjal/Projects/ml-repro-2021/review-kd/pretrained/{net_type}")
     if name in os.listdir():
         return True
     return False
@@ -37,7 +37,7 @@ def is_pretrained_present(params, net_type):
 
 def load_model(params, net_type):
     name = generate_name(params, net_type)
-    location = f"pretrained/{net_type}/{name}"
+    location = f"/home/pranjal/Projects/ml-repro-2021/review-kd/pretrained/{net_type}/{name}"
     print(f"loading {net_type} model from {location}")
     net = torch.load(f"{location}")
     return net

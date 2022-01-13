@@ -15,3 +15,7 @@ def get_net(model):
         return resnet56
     elif model == 'resnet110':
         return resnet110
+    elif model == 'custom_teacher':
+        return custom_teacher
+    elif model == 'custom_student':
+        return custom_student

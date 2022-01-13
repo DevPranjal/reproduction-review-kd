@@ -49,6 +49,10 @@ def train(net, train_iter, loss, optimizer):
                 average_loss.update(l.item())
                 t.set_postfix(loss=f'{average_loss():.3f}')
                 t.update()
+        
+        # test
+        print("\ncalculating accuracy on test data")
+        test(net, test_iter)
 
     store_model(net, params, net_type)
 
@@ -78,9 +82,6 @@ if __name__ == "__main__":
     # train
     net = train(net, train_iter, loss, optimizer)
 
-    # test
-    print("\ncalculating accuracy on test data")
-    test(net, test_iter)
 
     # TODO: change this
     # saving model

@@ -1,5 +1,7 @@
 pretrained/
 pretrained-basickd/
+data/
+.vscode/
 *.pt
 *.pyc
 __pycache__/

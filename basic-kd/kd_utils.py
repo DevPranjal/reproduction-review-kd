@@ -100,7 +100,7 @@ def train(net, train_iter, test_iter, loss, optimizer, params, is_student=False)
             l = loss(preds, y)
             optimizer.zero_grad()
             l.backward()
-            ptimizer.step()o
+            optimizer.step()
 
         accuracy = calculate_accuracy(net, test_iter, device)
         print(f"test accuracy at epoch {epoch + 1} = {accuracy}")
