@@ -11,14 +11,14 @@
     "student": {
         "model": "resnet8",
         "num_epochs": 3,
-        "lr": 0.01,
+        "lr": 0.1,
         "batch_size": 64,
         "force_train": false
     },
     "student_review_kd": {
         "model": "resnet8",
         "num_epochs": 3,
-        "lr": 0.01,
+        "lr": 0.1,
         "batch_size": 64,
         "kd_loss_weight": 0.7,
         "force_train": false

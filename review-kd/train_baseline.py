@@ -49,9 +49,9 @@ def train(net, train_iter, loss, optimizer):
                 average_loss.update(l.item())
                 t.set_postfix(loss=f'{average_loss():.3f}')
                 t.update()
-        
+
         # test
-        print("\ncalculating accuracy on test data")
+        print('testing:')
         test(net, test_iter)
 
     store_model(net, params, net_type)
@@ -66,8 +66,7 @@ def test(net, test_iter):
 
 if __name__ == "__main__":
     # defining dataloaders
-    train_iter, test_iter, num_classes = get_dataloaders(
-        data)(params[net_type]["batch_size"])
+    train_iter, test_iter, num_classes = get_dataloaders(data)(params[net_type]["batch_size"])
 
     # get network based on model
     net = get_net(params[net_type]["model"])(num_classes)
@@ -81,8 +80,3 @@ if __name__ == "__main__":
 
     # train
     net = train(net, train_iter, loss, optimizer)
-
-
-    # TODO: change this
-    # saving model
-    # torch.save(net, f'{params[net_type]["save_as"]}.pt')
