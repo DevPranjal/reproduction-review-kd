@@ -58,6 +58,9 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
                 with torch.no_grad():
                     teacher_features, teacher_preds = teacher(X, with_features=True)
 
+                if e == 1:
+                    print(student_preds)
+
                 ce_loss = loss_base(student_preds, y)
 
                 student_features = student_features[::-1]
@@ -82,7 +85,7 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
                     # print(f'ABF OUTPUT {i} SHAPE: {abf_output.shape}')
                     # print(f'TEACHER FEATURE {i} SHAPE: {tf.shape}')
 
-                # total_loss += ce_loss
+                total_loss += ce_loss
                 total_loss += total_kd_loss * kd_loss_weight
 
                 # total_norms = []
@@ -93,6 +96,9 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
                     param_norm = p.grad.detach().data.norm(2)
                     total_norm += param_norm.item() ** 2
                 total_norm = total_norm ** 0.5
+
+                if e == 1:
+                    print(total_norm)
 
                 # total_norms.append(total_norm)
                 # animator.add(i, total_norm)
@@ -105,13 +111,13 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
                 # del abf_output
 
                 average_loss.update(total_loss.item())
-                t.set_postfix(loss=f'{average_loss():.3f}', total_norm=f'{total_norm:.3f}')
+                t.set_postfix(loss=f'{average_loss():.3f}')
                 t.update()
 
         print('testing:')
         test(student, test_iter)
 
-        print(total_norms)
+        # print(total_norms)
 
     store_model(student, params, net_type)
 
@@ -153,9 +159,9 @@ if __name__ == "__main__":
     optimizer = torch.optim.SGD(
         student_kd.parameters(),
         lr=params[net_type]["lr"],
-        # momentum=0.9,
-        # nesterov=True,
-        # weight_decay=5e-3
+        momentum=0.9,
+        nesterov=True,
+        weight_decay=5e-4
     )
 
     # define transforms
