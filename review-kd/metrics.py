@@ -1,5 +1,4 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
 from tqdm import tqdm
 
@@ -69,3 +68,4 @@ if __name__ == "__main__":
     features1 = torch.ones([2, 2, 2, 2], dtype=torch.float32)
     features2 = torch.ones([2, 2, 2, 2], dtype=torch.float32) * 2
     print(hcl(features1, features2))
+    # print(hcl2([features1, features1, features1, features1], [features2, features2, features2, features2]))

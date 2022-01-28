@@ -84,8 +84,8 @@ def build_abfs_for_resnet(device):
     return [abf1, abf2, abf3, abf4, abf5]
 
 
-# if __name__ == "__main__":
-#     abf1 = ABF(64, 64, 1, torch.device("cuda:0"))
-#     features1 = torch.randint(10, [2, 3, 2, 2], dtype=torch.float32)
-#     features2 = torch.randint(10, [2, 6, 4, 4], dtype=torch.float32)
-#     print(abf1(features1, features2))
+if __name__ == "__main__":
+    abf1 = ABF(64, 64, 1, torch.device("cuda:0"))
+    features1 = torch.randint(10, [2, 64, 2, 2], dtype=torch.float32).to()
+    features2 = torch.randint(10, [2, 64, 4, 4], dtype=torch.float32)
+    print(abf1(features1, features2).shape)

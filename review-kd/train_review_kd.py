@@ -4,7 +4,7 @@ import json
 import argparse
 from tqdm import tqdm
 
-from metrics import hcl, calculate_accuracy, RunningAverage
+from metrics import hcl, hcl2, calculate_accuracy, RunningAverage
 
 from utils.data_utils import get_dataloaders
 from utils.net_utils import get_net
@@ -45,8 +45,8 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
 
     average_loss = RunningAverage()
 
-    animator = Animator(xlabel='iteration', xlim=[1, num_epochs * len(train_iter)],
-                        legend=['total norm'])
+    # animator = Animator(xlabel='iteration', xlim=[1, num_epochs * len(train_iter)],
+    #                     legend=['total norm'])
 
     for e in range(num_epochs):
         print(f'epoch: {e}')
@@ -58,18 +58,10 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
                 with torch.no_grad():
                     teacher_features, teacher_preds = teacher(X, with_features=True)
 
-                if e == 1:
-                    print(student_preds)
-
                 ce_loss = loss_base(student_preds, y)
 
                 student_features = student_features[::-1]
                 teacher_features = teacher_features[::-1]
-
-                # for i, sf in enumerate(student_features):
-                #     print(f'sf {i}: {sf.shape}')
-                # for i, tf in enumerate(teacher_features):
-                #     print(f'tf {i}: {tf.shape}')
 
                 total_kd_loss = 0
                 total_loss = 0
@@ -80,28 +72,8 @@ def train(student, teacher, abfs, train_iter, loss_base, loss_kd, optimizer):
                     abf_output, residual_output = abfs[i](sf, residual_output)
                     total_kd_loss += loss_kd(abf_output, tf)
 
-                    # print(f'RESIDUAL OUTPUT {i} SHAPE: {residual_output.shape}')
-                    # print(f'STUDENT FEATURE {i} SHAPE: {sf.shape}')
-                    # print(f'ABF OUTPUT {i} SHAPE: {abf_output.shape}')
-                    # print(f'TEACHER FEATURE {i} SHAPE: {tf.shape}')
-
                 total_loss += ce_loss
                 total_loss += total_kd_loss * kd_loss_weight
-
-                # total_norms = []
-
-                total_norm = 0
-                parameters = [p for p in student.parameters() if p.grad is not None and p.requires_grad]
-                for p in parameters:
-                    param_norm = p.grad.detach().data.norm(2)
-                    total_norm += param_norm.item() ** 2
-                total_norm = total_norm ** 0.5
-
-                if e == 1:
-                    print(total_norm)
-
-                # total_norms.append(total_norm)
-                # animator.add(i, total_norm)
 
                 optimizer.zero_grad()
                 total_loss.backward()
@@ -160,8 +132,8 @@ if __name__ == "__main__":
         student_kd.parameters(),
         lr=params[net_type]["lr"],
         momentum=0.9,
-        nesterov=True,
-        weight_decay=5e-4
+        # nesterov=True,
+        # weight_decay=5e-4
     )
 
     # define transforms
