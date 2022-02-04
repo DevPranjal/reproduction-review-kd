@@ -5,9 +5,9 @@ params = {
     "teacher_weight_path": f"./pretrained/resnet56.pt",
 
     "batch_size": 64,
-    "num_epochs": 240,
+    "num_epochs": 20,
     "lr": 0.1,
-    "lr_decay_steps": [150, 180, 210],
+    "lr_decay_steps": [12, 17],
     "lr_decay_rate": 0.1,
     "weight_decay": 5e-4,
     "args": 0,

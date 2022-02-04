@@ -1,10 +1,6 @@
 # framework.py consists of implementations of the proposals made by the authors
-# We largely refer the original implementation of the paper by the authors
-
-# There are also some parts of the code which were not mentioned in
-# the paper but were included in the code implementation
-# We have taken care to separate these sections, by using the
-# '_from_paper' and '_from_implementation' namespace
+# We largely refer the original implementation of the paper by the authors,
+# mainly refactoring their code
 
 # Distilling Knowledge via Knowledge Review
 # |----> Uses Residual Learning Framework
@@ -30,10 +26,14 @@ def hcl(student_features, teacher_features):
     # the levels of hcl loss here are predefined, according to
     # the authors' implementation
     # ablation studies have been performed and these levels and their
-    # weights have been changed
+    # weights have been changed (refer experimental/hcl_experiments.py)
     levels = [h, 4, 2, 1]
     level_weight = [1.0, 0.5, 0.25, 0.125]
     total_weight = sum(level_weight)
+    # keeping the corresponding weights same, we change the levels to:
+    # [h, 2, 1], [4, 1], [h, h//2, h//4], [h, h-1, h-2, h-3]
+    # keeping the levels same, we change the weights to:
+    # [1.0, 1.0, 1.0, 1.0], [0.125, 0.25, 0.5, 1.0]
 
     for lvl, lvl_weight in zip(levels, level_weight):
         if lvl > h:
@@ -54,17 +54,21 @@ def hcl(student_features, teacher_features):
 # presented in the ABF flow diagram, fig. 3(a)) is the one of the inputs to
 # the next ABF module.
 
-# But the code implementation provides two different outputs, one that
+# But the authors' code implementation provides two different outputs, one that
 # proceeds to the next ABF module (`residual_output`) and one that
 # is the output of the ABF module and which is involved in the loss
 # function (`abf_output`)
+# The `residual_output` differs from the `abf_output` in terms of the number
+# of channels. The `residual_output` has `mid_channels` while the `abf_output`
+# has `out_channels`
 
-# In the first implementation, we have implemented the latter approach,
-# and the second implementation provides the former approach
+# In this implementation, we have taken the latter approach
 
-class ABF_from_implementation(nn.Module):
+# The second approach can be found in experimental/abf_experiments.py
+
+class ABF(nn.Module):
     def __init__(self, in_channel, out_channel):
-        super(ABF_from_implementation, self).__init__()
+        super(ABF, self).__init__()
 
         self.mid_channel = 64
 
@@ -97,8 +101,6 @@ class ABF_from_implementation(nn.Module):
             prev_abf_output = F.interpolate(prev_abf_output, size=(
                 teacher_shape, teacher_shape), mode='nearest')
 
-            print(student_feature.shape, prev_abf_output.shape)
-
             concat_features = torch.cat(
                 [student_feature, prev_abf_output], dim=1)
             attention_maps = self.conv_to_att_maps(concat_features)
@@ -115,54 +117,10 @@ class ABF_from_implementation(nn.Module):
         return abf_output, residual_output
 
 
-class ABF_from_paper(nn.Module):
-    def __init__(self, in_channel, out_channel):
-        super(ABF_from_paper, self).__init__()
-
-        self.conv_to_out_channel = nn.Sequential(
-            nn.Conv2d(in_channel, out_channel, kernel_size=3,
-                      stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(out_channel),
-        ).to(torch.device('cuda:0'))
-        nn.init.kaiming_uniform_(self.conv_to_out_channel[0].weight, a=1)
-
-        self.conv_to_att_maps = nn.Sequential(
-            nn.Conv2d(out_channel * 2, 2, kernel_size=1),
-            nn.Sigmoid(),
-        ).to(torch.device('cuda:0'))
-        nn.init.kaiming_uniform_(self.conv_to_att_maps[0].weight, a=1)
-
-    def forward(self, student_feature, prev_abf_output, teacher_shape):
-        n, c, h, w = student_feature.shape
-        student_feature = self.conv_to_out_channel(student_feature)
-
-        if prev_abf_output is None:
-            residual_output = student_feature
-        else:
-            prev_abf_output = F.interpolate(prev_abf_output, size=(
-                teacher_shape, teacher_shape), mode='nearest')
-
-            concat_features = torch.cat(
-                [student_feature, prev_abf_output], dim=1)
-            attention_maps = self.conv_to_att_maps(concat_features)
-            attention_map1 = attention_maps[:, 0].view(n, 1, h, w)
-            attention_map2 = attention_maps[:, 1].view(n, 1, h, w)
-
-            residual_output = student_feature * attention_map1 \
-                + prev_abf_output * attention_map2
-
-        # here we just equate both the outputs instead of having
-        # a single output to have the same training code for both
-        # the implementations
-        abf_output = residual_output
-
-        return abf_output, residual_output
-
-
 ########## Residual Learning Framework ##########
 
 class RLF_for_Resnet(nn.Module):
-    def __init__(self, student, use_abf_from_paper=False):
+    def __init__(self, student, abf_to_use):
         super(RLF_for_Resnet, self).__init__()
 
         self.student = student
@@ -175,10 +133,7 @@ class RLF_for_Resnet(nn.Module):
         ABFs = nn.ModuleList()
 
         for idx, in_channel in enumerate(in_channels):
-            if use_abf_from_paper:
-                ABFs.append(ABF_from_paper(in_channel, out_channels[idx]))
-            else:
-                ABFs.append(ABF_from_implementation(in_channel, out_channels[idx]))
+            ABFs.append(abf_to_use(in_channel, out_channels[idx]))
 
         self.ABFs = ABFs[::-1]
         self.to('cuda')
