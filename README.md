@@ -16,7 +16,7 @@ This effort aims to reproduce the results of experiments and analyse the robustn
 conda create -n reviewkd python=3.8
 conda activate reviewkd
 
-unzip ml-repro-2021
+git clone https://github.com/DevPranjal/ml-repro-2021.git
 cd ml-repro-2021
 
 pip install requirements.txt
