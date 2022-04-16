@@ -24,7 +24,7 @@ pip install requirements.txt
 
 ### Training baseline teachers
 
-To train the teacher model, we use the code written by the authors as follows
+To train the teacher model, we use the code written by the authors as follows:
 
 ```bash
 git clone https://github.com/dvlab-research/ReviewKD
